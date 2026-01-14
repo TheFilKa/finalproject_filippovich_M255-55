@@ -1,32 +1,22 @@
-[project]
+[tool.poetry]
 name = "finalproject-filippovich-m255-55"
 version = "0.1.0"
 description = "CLI application for virtual currency wallet and rate tracking"
-authors = [
-    { name = "FilKa", email = "vladislav_filippovich2@mail.ru" }
-]
+authors = ["FilKa <vladislav_filippovich2@mail.ru>"]
 readme = "README.md"
-requires-python = ">=3.12"
-
-# ЗАВИСИМОСТИ ПРОЕКТА (runtime)
-dependencies = [
-    "prettytable>=3.10.0",
-    "requests>=2.32.0"
-]
-
-# CLI entrypoint (poetry run project)
-[project.scripts]
-project = "valutatrade_hub.cli.interface:run_cli"
-
-# ---- Poetry-specific настройки ----
-[tool.poetry]
 packages = [{ include = "valutatrade_hub" }]
 
-# DEV-зависимости (ruff)
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+prettytable = "^3.10.0"
+requests = "^2.32.0"
+
+[tool.poetry.dev-dependencies]
 ruff = "^0.6.0"
 
-# Настройки ruff
+[tool.poetry.scripts]
+project = "valutatrade_hub.cli.interface:run_cli"
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
@@ -34,7 +24,6 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 
-# Настройки приложения (Singleton SettingsLoader читает отсюда)
 [tool.valutatrade]
 DATA_DIR = "data"
 USERS_FILE = "data/users.json"
@@ -52,7 +41,6 @@ LOG_LEVEL = "INFO"
 
 PARSER_UPDATE_INTERVAL_SECONDS = 300
 
-# ---- build system ----
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

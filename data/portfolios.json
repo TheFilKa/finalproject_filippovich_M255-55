@@ -6,5 +6,21 @@
         "balance": 1000.0
       }
     }
+  },
+  {
+    "user_id": 2,
+    "wallets": {
+      "EUR": {
+        "balance": 50.0
+      }
+    }
+  },
+  {
+    "user_id": 3,
+    "wallets": {
+      "BTC": {
+        "balance": 0.0
+      }
+    }
   }
 ]

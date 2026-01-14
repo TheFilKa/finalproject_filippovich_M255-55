@@ -6,6 +6,7 @@ from valutatrade_hub.core.exceptions import (
     InsufficientFundsError,
 )
 from valutatrade_hub.core.usecases import CoreService
+from valutatrade_hub.infra.database import DatabaseManager
 
 from valutatrade_hub.parser_service.api_clients import CoinGeckoClient, ExchangeRateApiClient
 from valutatrade_hub.parser_service.config import ParserConfig
@@ -123,10 +124,42 @@ def run_cli() -> None:
                         )
 
                     case "4":  # get-rate
+                        db = DatabaseManager()
+                        snapshot = db.load_rates()
+                        pairs = (snapshot.get("pairs") or {}).keys()
+
+                        currencies: set[str] = set()
+                        for pair in pairs:
+                            if "_" in pair:
+                                left, right = pair.split("_", 1)
+                                currencies.add(left)
+                                currencies.add(right)
+
+                        if currencies:
+                            print("Доступные валюты:")
+                            print(", ".join(sorted(currencies)))
+                        else:
+                            print("Локальный кеш курсов пуст. Сначала выполните обновление курсов.")
+
                         from_c = input_non_empty("Из валюты: ").upper()
                         to_c = input_non_empty("В валюту: ").upper()
-                        rate, updated, _ = core.get_rate(from_c, to_c, allow_stale=True)
-                        print(f"Курс {from_c} → {to_c}: {rate:.8f} (обновлено {updated})")
+
+                        try:
+                            rate, updated, _ = core.get_rate(from_c, to_c, allow_stale=True)
+                            print(f"Курс {from_c} → {to_c}: {rate:.8f} (обновлено {updated})")
+                        except ApiRequestError:
+                            # вычисление кросс-курса через USD, если прямой пары нет в кеше
+                            rate_from_usd, updated1, _ = core.get_rate(from_c, "USD", allow_stale=True)
+                            rate_to_usd, updated2, _ = core.get_rate(to_c, "USD", allow_stale=True)
+
+                            if rate_to_usd == 0:
+                                raise ApiRequestError(
+                                    f"Курс {from_c}→{to_c} недоступен. Повторите попытку позже."
+                                )
+
+                            cross = rate_from_usd / rate_to_usd
+                            updated = updated1 if updated1 >= updated2 else updated2
+                            print(f"Курс {from_c} → {to_c}: {cross:.8f} (обновлено {updated})")
 
                     case "5":  # update-rates
                         print("Обновление курсов...")
@@ -148,7 +181,7 @@ def run_cli() -> None:
                             print(f"Обновление завершено с ошибками. Обновлено: {result.get('updated')}")
 
                     case "6":  # logout
-                        core.logout()
+                        core._session = None
                         print("Вы вышли из аккаунта")
 
                     case "0":
