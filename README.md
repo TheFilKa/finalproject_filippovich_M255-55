@@ -26,4 +26,4 @@ make project
 ```
 
 ## Запись 
-https://asciinema.org/connect/06557868-0674-44f3-bea0-c1a97e348382
+[https://asciinema.org/connect/06557868-0674-44f3-bea0-c1a97e348382](посмотреть)
